@@ -94,7 +94,11 @@ int main(int argc, char* argv[]) {
         local_norm = rel_error(r_global, r_prev_global, nodecount);
         MPI_Allreduce(&local_norm, &norm, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
-        free(recvcounts);
+        // if (rank == 0){
+        //     norm = rel_error(r_global, r_prev_global, nodecount);
+        // }
+        // MPI_Bcast(&norm,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        free(recvcounts);       
         free(location);
 
     } while (norm >= EPSILON);
