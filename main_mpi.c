@@ -61,7 +61,12 @@ int main(int argc, char* argv[]) {
 
     for (i = 0; i < nodecount; i++)
         r_global[i] = 1.0 / nodecount;
-
+    int *recvcounts = malloc(size * sizeof(int));
+    int *location = malloc(size * sizeof(int));
+    for (i = 0; i < size; i++) {
+        recvcounts[i] = nodecount / size + (i < nodecount % size ? 1 : 0);
+        location[i] = (nodecount / size) * i + (i < nodecount % size ? i : nodecount % size);
+    }
     iterationcount = 0;
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -81,12 +86,12 @@ int main(int argc, char* argv[]) {
 
         // Gather all updated ranks into r_global
         // How many to gather, wher to gather 
-        int *recvcounts = malloc(size * sizeof(int));
-        int *location = malloc(size * sizeof(int));
-        for (i = 0; i < size; i++) {
-            recvcounts[i] = nodecount / size + (i < nodecount % size ? 1 : 0);
-            location[i] = (nodecount / size) * i + (i < nodecount % size ? i : nodecount % size);
-        }
+        // int *recvcounts = malloc(size * sizeof(int));
+        // int *location = malloc(size * sizeof(int));
+        // for (i = 0; i < size; i++) {
+        //     recvcounts[i] = nodecount / size + (i < nodecount % size ? 1 : 0);
+        //     location[i] = (nodecount / size) * i + (i < nodecount % size ? i : nodecount % size);
+        // }
 
         MPI_Allgatherv(r_local, local_count, MPI_DOUBLE,
                        r_global, recvcounts, location, MPI_DOUBLE,
@@ -99,12 +104,12 @@ int main(int argc, char* argv[]) {
         if (rank == 0){
             norm = rel_error(r_global, r_prev_global, nodecount);
         }
-        // MPI_Bcast(&norm,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-        free(recvcounts);       
-        free(location);
+        MPI_Bcast(&norm,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        
 
     } while (norm >= EPSILON);
-
+    free(recvcounts);       
+    free(location);
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (rank == 0) {
