@@ -29,6 +29,7 @@ int main (int argc, char* argv[]){
     /* INSTANTIATE MORE VARIABLES IF NECESSARY */
     double damping_const;
     double norm = 0.0;
+    GET_TIME(start);
 
     // load data
     if ((ip = fopen("data_input_meta","r")) == NULL) {
@@ -37,6 +38,8 @@ int main (int argc, char* argv[]){
     }
     fscanf(ip, "%d\n", &nodecount);
     fclose(ip);
+   GET_TIME(start);
+
     if (node_init(&nodehead, 0, nodecount)) return 254;
 
     // initialize variables
@@ -51,8 +54,6 @@ int main (int argc, char* argv[]){
     for ( i = 0; i < nodecount; ++i)
         r[i] = 1.0 / nodecount;
     /* INITIALIZE MORE VARIABLES IF NECESSARY */
-
-    GET_TIME(start);
 
     // core calculation
     do{

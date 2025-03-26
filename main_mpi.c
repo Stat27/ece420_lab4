@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (rank == 0) {
+
         fp = fopen("data_input_meta", "r");
         if (!fp) {
             printf("Error opening the data_input_meta file.\n");
@@ -35,6 +36,8 @@ int main(int argc, char* argv[]) {
         }
         fscanf(fp, "%d", &nodecount);
         fclose(fp);
+        GET_TIME(start);
+
     }
 
     // Broadcast nodecount to all processes
@@ -61,7 +64,6 @@ int main(int argc, char* argv[]) {
 
     iterationcount = 0;
     MPI_Barrier(MPI_COMM_WORLD);
-    GET_TIME(start);
 
     do {
         iterationcount++;
@@ -91,12 +93,12 @@ int main(int argc, char* argv[]) {
                        MPI_COMM_WORLD);
 
         //local norm is same as norm, just easy to synchronize this way
-        local_norm = rel_error(r_global, r_prev_global, nodecount);
-        MPI_Allreduce(&local_norm, &norm, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+        // local_norm = rel_error(r_global, r_prev_global, nodecount);
+        // MPI_Allreduce(&local_norm, &norm, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
-        // if (rank == 0){
-        //     norm = rel_error(r_global, r_prev_global, nodecount);
-        // }
+        if (rank == 0){
+            norm = rel_error(r_global, r_prev_global, nodecount);
+        }
         // MPI_Bcast(&norm,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
         free(recvcounts);       
         free(location);
@@ -104,9 +106,10 @@ int main(int argc, char* argv[]) {
     } while (norm >= EPSILON);
 
     MPI_Barrier(MPI_COMM_WORLD);
-    GET_TIME(end);
 
     if (rank == 0) {
+        GET_TIME(end);
+
         Lab4_saveoutput(r_global, nodecount, end - start);
     }
 
